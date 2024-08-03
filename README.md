@@ -56,8 +56,27 @@ q2. Kotlin Scoped Functions❓
 
   Kotlin provides a set of powerful functions known as scope functions to help write concise, readable, and expressive code. These functions allow you to execute a block of code in the context of an object, reducing the need for repetitive code and enabling more fluent programming patterns. The primary scope functions in Kotlin are let, run, with, apply, and also. Each of these functions has its unique behaviour and use case, and they are distinguished mainly by how they access the object (this or it) and what they return.
 
-  https://github.com/user-attachments/assets/49a5e26a-34ab-491c-bcf5-4303774b91a5
+<a href="#"><img width="90%" height="500px" src="https://github.com/user-attachments/assets/49a5e26a-34ab-491c-bcf5-4303774b91a5"/></a>
+  
+let
 
+The let function is a versatile Kotlin tool useful for null safety, scoping, and chaining operations. It helps write more readable and safe code, especially when dealing with nullable types and transformations. By utilizing let, you can ensure that certain operations are only performed when an object is non-null, and you can keep your code concise and expressive.
+
+run
+
+The run function in Kotlin is a versatile tool that can be used to execute a block of code on an object with this as the context or without a receiver as a standalone lambda. It's especially useful for avoiding repetition of the object name when accessing its properties and methods. The use of run makes code more concise and readable, and it's commonly used for object initialization, transformations, and computing results based on object properties.
+
+with
+
+In Kotlin, the with function is a scope function used to work with an object within a block of code, providing a context where the object is accessed via this keyword. Unlike let, run, apply, and with, it is not an extension function but is instead used as a regular function. It is typically used for performing operations on an object, especially when you want to perform multiple actions and avoid repeating the object reference.
+
+apply
+
+Kotlin, the apply function is a scope function that operates on an object and returns that object itself after applying a series of operations to it. The object is accessed inside the block using this keyword, and because the object itself is returned, apply is often used for object configuration and initialization.
+
+also
+
+In Kotlin, also is a scope function that is used to perform additional operations on an object. Like apply, it allows you to work with an object within a block of code. However, the key difference is that also provides the object as an argument (it) to the lambda block, rather than using this reference. This function returns the object itself, making it useful for chaining operations where you want to perform some side effects (like logging or validation) without altering the object.
   
 
   
