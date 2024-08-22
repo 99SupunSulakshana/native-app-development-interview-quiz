@@ -290,7 +290,7 @@ q12. Null Safety❓
 
 Null safety in Kotlin is a key feature that helps prevent the common null pointer exceptions (NPEs), which are a common source of runtime errors in many programming languages. Kotlin’s type system is designed to eliminate null references from code, making applications more robust and safer. Kotlin’s null safety features significantly reduce the chances of encountering null pointer exceptions by making the type system aware of nullability. With nullable types, safe calls, Elvis operators, non-null assertions, and smart casts, Kotlin provides a robust framework for handling null values, leading to safer and more reliable code.
 
-👉Nullable and Non-Nullable Types
+👉 Nullable and Non-Nullable Types
 By default, all types in Kotlin are non-nullable, meaning you cannot assign null to a variable unless explicitly declared as nullable. You can declare a nullable type by appending a ? to the type.
 
     var nonNullableString: String = "Hello"  // Non-nullable type
@@ -299,43 +299,43 @@ By default, all types in Kotlin are non-nullable, meaning you cannot assign null
     var nullableString: String? = "Hello"  // Nullable type
     nullableString = null  // This is allowed
 
-👉Safe Calls (?.)
+👉 Safe Calls (?.)
 The safe call operator ?. is used to access properties or methods of a nullable type without throwing an NPE. If the object is null, the call returns null instead of throwing an exception.
 
     val length: Int? = nullableString?.length  // Returns null if nullableString is null
 
-👉Elvis Operator (?:)
+👉 Elvis Operator (?:)
 The Elvis operator is used to provide a default value when a nullable expression evaluates to null.
 
     val length = nullableString?.length ?: 0  // Returns 0 if nullableString is null
 
-👉Non-Null Assertion (!!)
+👉 Non-Null Assertion (!!)
 The non-null assertion operator !! can be used to assert that a value is non-null. If the value is actually null, it will throw an NPE at runtime.
 
     val length = nullableString!!.length  // Throws NPE if nullableString is null
 
-👉Smart Casts
+👉 Smart Casts
 Kotlin’s compiler automatically performs smart casts when it can guarantee that a nullable variable is not null. This is usually done after a null check.
 
     if (nullableString != null) {
         println(nullableString.length)  // Smart cast to non-nullable type
     }
 
-👉Let Function
+👉 Let Function
 The let function is often used with safe calls to execute a block of code only if the object is non-null.
 
     nullableString?.let {
         println("The length of the string is ${it.length}")
     }
 
-👉lateinit and Null Safety
+👉 lateinit and Null Safety
 The lateinit keyword allows you to declare a non-nullable variable without initializing it at the time of declaration. However, if you try to access it before it is initialized, an UninitializedPropertyAccessException is thrown.
 
     lateinit var name: String
     name = "Kotlin"
     println(name)
 
-👉Nullable Collections
+👉 Nullable Collections
 You can have collections of nullable types, which means the collection itself is non-null, but it can contain null elements.
 
     val nullableList: List<String?> = listOf("Kotlin", null, "Java")
@@ -345,7 +345,7 @@ q13. Object Keyword in Kotlin❓
 
 In Kotlin, the object keyword is a versatile feature that can be used in different contexts to define singletons, companion objects, and anonymous objects. It provides a way to create objects without needing to explicitly declare a class. It simplifies the design of classes that should have only one instance or require static-like behaviour and allows for flexible, one-time-use objects. Whether used for organizing code, managing global state, or implementing interfaces on the fly, the object keyword is a cornerstone of Kotlin’s object-oriented programming features.
 
-👉Singletons
+👉 Singletons
 
   The object keyword is used to define a singleton, a class with only one instance. This is useful for classes that don’t need multiple instances, such as utility classes or managers. A singleton object is created when accessed for the first time and globally accessible.
 
@@ -360,7 +360,7 @@ In Kotlin, the object keyword is a versatile feature that can be used in differe
         DatabaseConnection.connect()  // Output: Connecting to the database at jdbc:mysql://localhost:3306/mydb
     }
 
-👉Companion
+👉 Companion
 
   Companion objects are used to define members of a class that belong to the class itself, rather than to instances of the class. This is similar to static members in Java. A class can have only one companion object, and it is defined inside the class using the companion object keyword. Companion objects can be named or anonymous. If unnamed, they can be accessed using the class name.
 
@@ -379,7 +379,7 @@ In Kotlin, the object keyword is a versatile feature that can be used in differe
     }
 
 
-👉Anonymous Objects
+👉 Anonymous Objects
 
 The object keyword can also be used to create anonymous objects, which are objects without a named class. This is particularly useful when you need a one-time-use object with certain properties or methods. Anonymous objects can be used for implementing interfaces or abstract classes on the fly.
 
@@ -395,7 +395,7 @@ The object keyword can also be used to create anonymous objects, which are objec
         myObject.printValues()  // Output: x = 10, y = 20
     }
 
-👉Object Inheritance
+👉 Object Inheritance
 
 Singleton objects can extend classes or implement interfaces. This allows them to inherit properties and methods, just like regular classes.
 
@@ -414,5 +414,89 @@ Singleton objects can extend classes or implement interfaces. This allows them t
     fun main() {
         DerivedSingleton.greet()  // Output: Hello from DerivedSingleton
     }
+
+
+q14. Sealed Classes❓
+
+In Kotlin, sealed classes are a special type of class that allows you to represent restricted class hierarchies. A sealed class can have a limited set of subclasses, which are known and defined at compile time. This feature is particularly useful when you want to model data types with a fixed number of possible states.
+
+👉 Restricted Class Hierarchy
+
+  Sealed classes restrict the subclasses that can inherit from them. All the subclasses must be defined in the same file as the sealed class. This makes the class hierarchy more controlled and predictable.
+
+    sealed class Result
+    data class Success(val data: String) : Result()
+    data class Error(val message: String) : Result()
+    object Loading : Result()
+
+👉 Exhaustive when Expressions
+
+  When you use a when expression with a sealed class, the compiler knows all possible subclasses, so it can ensure that all cases are handled. If you forget to handle a subclass, the compiler will give you a warning or error.
+
+    fun handleResult(result: Result) {
+      when (result) {
+          is Success -> println("Success: ${result.data}")
+          is Error -> println("Error: ${result.message}")
+          Loading -> println("Loading...")
+          // No need for an `else` branch since all cases are covered
+      }
+    }
+
+👉 Immutability and Data Classes
+
+  Sealed classes often work well with data classes to represent different states or results.
+
+    sealed class Operation
+    data class Addition(val x: Int, val y: Int) : Operation()
+    data class Subtraction(val x: Int, val y: Int) : Operation()
+
+
+👉 Sealed Interfaces
+
+  Starting with Kotlin 1.5, you can also use sealed interfaces, which allow you to define a sealed hierarchy that includes both classes and interfaces.
+
+    sealed interface Operation
+    data class Addition(val x: Int, val y: Int) : Operation
+    data class Subtraction(val x: Int, val y: Int) : Operation
+
+
+👉 Advantages Over Enum Classes
+
+  Sealed classes are more flexible than enum classes because each subclass of a sealed class can have its properties and methods. Enum constants, by contrast, are single instances that cannot have different types or properties.
+
+    enum class Direction {
+        NORTH, SOUTH, EAST, WEST
+    }
+    
+    // vs.
+    
+    sealed class Direction
+    object North : Direction()
+    object South : Direction()
+    object East : Direction()
+    object West : Direction()
+
+👉 Object Subclasses
+
+  You can define subclasses of a sealed class as objects if they don’t need to hold any state. This is useful for representing a fixed number of singleton states.
+
+    sealed class UserAction
+    object Login : UserAction()
+    object Logout : UserAction()
+
+👉 Sealed Class Visibility
+
+  Sealed classes and their subclasses can be public or have other visibility modifiers. The subclasses don’t have to be nested inside the sealed class, but they must be in the same file.
+
+    sealed class Response
+    internal data class Success(val data: String) : Response()
+    private object Failure : Response()
+
+👉 Type Safety
+
+Sealed classes enhance type safety by ensuring that all possible states are considered, reducing the likelihood of runtime errors and making your code more reliable.
+
+
+
 
 
