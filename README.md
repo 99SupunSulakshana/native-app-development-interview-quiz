@@ -494,9 +494,73 @@ In Kotlin, sealed classes are a special type of class that allows you to represe
 
 👉 Type Safety
 
-Sealed classes enhance type safety by ensuring that all possible states are considered, reducing the likelihood of runtime errors and making your code more reliable.
+  Sealed classes enhance type safety by ensuring that all possible states are considered, reducing the likelihood of runtime errors and making your code more reliable.
 
 
+q15 . @JvmStatic, @JvmOverloads, and @JvmField annotations in Kotlin❓
+
+👉 @JvmStatic
+
+The @JvmStatic annotation is used to make a method or property in a companion object or object accessible as a static method or field in Java. In Kotlin, there is no concept of static members, so this annotation helps when you need to expose Kotlin code to Java, which expects static members.
+
+    class MyClass {
+        companion object {
+            @JvmStatic
+            fun staticMethod() {
+                println("This is a static method")
+            }
+    
+            fun regularMethod() {
+                println("This is a regular method")
+            }
+        }
+    }
+
+  usage java:
+
+    public class Main {
+        public static void main(String[] args) {
+            MyClass.staticMethod(); // Works because of @JvmStatic
+            MyClass.Companion.regularMethod(); // Without @JvmStatic, you'd need to access via Companion
+        }
+    }
 
 
+👉 @JvmOverloads
+
+The @JvmOverloads annotation is used to generate overloaded versions of a Kotlin function that has default parameter values. In Kotlin, you can provide default values for function parameters, but in Java, this isn’t directly supported. The @JvmOverloads annotation automatically generates all possible overloaded versions of the function for use in Java.
+
+    class MyClass {
+        @JvmOverloads
+        fun greet(name: String = "Guest", age: Int = 18) {
+            println("Hello $name, you are $age years old")
+        }
+    }
+
+ usage java:
+
+ 
+    public class Main {
+        public static void main(String[] args) {
+            MyClass myClass = new MyClass();
+            myClass.greet();              // Hello Guest, you are 18 years old
+            myClass.greet("Alice");       // Hello Alice, you are 18 years old
+            myClass.greet("Bob", 25);     // Hello Bob, you are 25 years old
+        }
+    }
+
+
+👉 @JvmField
+
+The @JvmField annotation is used to expose a Kotlin property as a public field in Java. By default, Kotlin properties generate getter and setter methods, but @JvmField removes these and exposes the property directly as a field. This can be useful for interoperability when using Kotlin properties from Java or when you need to work with libraries that expect fields instead of methods.
+
+    class MyClass {
+        @JvmField
+        var name: String = "Kotlin"
+    
+        companion object {
+            @JvmField
+            val version = "1.5"
+        }
+    }
 
