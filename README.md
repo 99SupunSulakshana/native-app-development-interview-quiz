@@ -564,3 +564,318 @@ The @JvmField annotation is used to expose a Kotlin property as a public field i
         }
     }
 
+
+ q16 . Inline Function❓
+
+In Kotlin, inline functions are a powerful feature that can improve performance by reducing the overhead of function calls, particularly in higher-order functions. When you mark a function as inline, the compiler replaces the function call with the actual code of the function at compile time. This can lead to more efficient code, especially in performance-critical situations.
+
+    inline fun <T> performOperation(value: T, operation: (T) -> Unit) {
+        operation(value)
+    }
+    
+    fun main() {
+        performOperation(5) { println(it * 2) }
+    }
+
+
+👉 Why Use Them?
+
+Performance: By lowering the overhead of function calls, inline functions can enhance performance, particularly when a function is called repeatedly or inside tight loops.
+
+Lambda and Higher-Order Functions: when passed from a lambda or anonymous function to a higher-order function, it prevents the construction of extra objects and reduces memory allocations.
+
+
+👉 Important Points:
+
+Code Size: Because the function’s body is duplicated to each call site, inlining functions results in larger produced code.
+
+Recursion: Recursive functions cannot be inlined since doing so would lead to an endless inlining operation. Therefore, inline functions cannot be recursive.
+
+Non-local Returns: You can return from the caller function inside the inline function since inline functions enable non-local returns. On the other hand, this may make the code more difficult to read and update.
+
+
+ q17 . Extension Function❓
+
+Extension functions in Kotlin allow developers to add new functions to existing classes without modifying their source code. These functions are defined outside of the class but can be called as if they were a part of the class. This is particularly useful when you want to add utility methods to a class that you don’t own or don’t want to extend through inheritance.
+
+    fun TypeName.extensionFunctionName(parameters): ReturnType {
+        // function body
+    } 
+
+Example:
+
+    fun String.addExclamation(): String {
+        return this + "!"
+    }
+    
+    fun main() {
+        val myString = "Hello"
+        println(myString.addExclamation())  // Output: Hello!
+    }
+
+Extension functions do not override member functions. The extension function to be called is determined by the type of the expression at compile time, not the runtime type of the object.
+
+
+q18 . Non-line Functions❓
+
+A non-inline function is simply a regular function that doesn’t use the inline keyword. Assume that we do not want all of the lamdas passed to an inline function to be inlined, in this case, We can mark those function parameters with the non-line modifier. Unlike inline functions, these functions are not inlined at the call site by the compiler.
+
+    fun addNumbers(a: Int, b: Int): Int {
+        return a + b
+    }
+    
+    fun main() {
+        val result = addNumbers(3, 5)
+        println("The sum is: $result")  // Output: The sum is: 8
+    }
+
+  Non-inline functions are executed with a normal function call. The function’s code is not copied to the call site, so there’s no increase in the code size.
+  
+  Non-inline functions may have some overhead associated with the function call, especially in the case of high-order functions where lambdas or function references are passed.
+  
+  Unlike inline functions, non-inline functions can be recursive because there’s no concern about copying the function code to the call site.
+  
+  In cases where performance optimization isn’t critical, and you’re dealing with straightforward operations, non-inline functions are typically sufficient.
+
+
+q18 . Higher-Order Functions❓
+
+A higher-order function is a function that takes functions as parameters or returns a function or both.
+
+  Can take functions as parameters.
+  Can return a function.
+
+    fun performOperation(a: Int, b: Int, operation: (Int, Int) -> Int): Int {
+        return operation(a, b)
+    }
+    
+    fun add(x: Int, y: Int): Int = x + y
+    fun multiply(x: Int, y: Int): Int = x * y
+
+    fun main() {
+        val sum = performOperation(5, 3, ::add)  // Passing the 'add' function
+        println("Sum: $sum")  // Output: Sum: 8
+    
+        val product = performOperation(5, 3, ::multiply)  // Passing the 'multiply' function
+        println("Product: $product")  // Output: Product: 15
+    }
+
+q19 . Crossinline Functions❓
+
+Crossinline in Kotlin is used to avoid non-local returns. When we add the crossline, it will not allow us to put the return inside that lambda. It ensures that the lambda passed to the inline function cannot be non-locally returned from.
+
+    inline fun performAction(crossinline action: () -> Unit) {
+        // Some other code...
+        someOtherFunction {
+            action()  // Since `action` is `crossinline`, it cannot cause a non-local return.
+        }
+    }
+    
+    fun someOtherFunction(callback: () -> Unit) {
+        callback()
+    }
+    
+    fun main() {
+        performAction {
+            println("Action performed")
+            // return // This would cause a compiler error due to `crossinline`
+        }
+    }
+
+
+q20 . Scoped Functions❓
+
+The Kotlin standard library contains several functions whose sole purpose is to execute a block of code within the context of an object. When you call such a function on an object with a lambda expression provided, it forms a temporary scope. In this scope, You can access the object without their name. Therefore, These functions are called scoped functions. Mainly there are five scoped functions: let, run, with, apply, and also.
+
+
+q21 . init block❓
+
+In Kotlin init block is used to initialize an object, when an instance of a class is created. init block is executed immediately after the primary constructor of the class is called, in addition to performing additional initialization logic. The init block is a powerful tool and it can be used to improve the design and maintainability of our code.
+
+    class Person(val name: String, val age: Int) {
+        val isAdult: Boolean
+    
+        init {
+            isAdult = age >= 18
+            println("Person's name is $name and age is $age")
+        }
+    
+        init {
+            println("Is $name an adult? $isAdult")
+        }
+    }
+    
+    fun main() {
+        val person = Person("John", 25)
+    }
+
+q22 . lateinit keyword❓
+
+In Kotlin lateinit is used if we don’t want to initialize a variable at the time of the declaration and want to initialize it at a late point in time. Especially, we need to make sure that initialize it before use. We can notice that the lateinit variable needs to be non-nullable.
+
+👉 when we use the lateinit property things to consider:
+
+  used with the var keyword.
+  used with the non-nullable variable.
+  can be initialized later.
+  this variable is mutable.
+  make sure this variable is initialised before use.
+
+
+     lateinit var name: String
+    
+        fun initializeName() {
+            name = "John Doe"
+        }
+
+
+q23 . lazy keyword❓
+
+The lazy in Kotin is used when we want to create a property that is initialized only when it is first accessed, that is known as lazy initialization. It’s useful when we defer the initialization of a property until it’s needed, potentially saving resources or improving performance.
+
+👉 when we use the lazy property things to consider:
+
+  used only with the val keyword, it’s a read-only property.
+  we want the variable to be initialized only if we need it for the first time.
+  lazy property only creates the object when we access it for the very first time, then in the subsequent access, it returns the same object.
+  
+
+     class Example {
+        val heavyComputation: String by lazy {
+            println("Computing the value...")
+            "Result of heavy computation"
+        }
+    }
+    
+    fun main() {
+        val example = Example()
+    
+        println("Before accessing heavyComputation")
+        println(example.heavyComputation)  // Computation happens here
+        println(example.heavyComputation)  // This time, it doesn't recompute
+    }
+
+q24 . const keyword❓
+
+The const keyword is used to declare a constant in compile-time. As a result, no values may be assigned at runtime to const variables. That is immutable (read-only) and at the time of declaration must be initialized with a value. In addition to them, the const keyword is used with the val keyword.
+
+👉 when we use the const keyword things to consider:
+
+  const can be used at the top level or as a member of an object or a companion object only.
+  const can be applied with primitive data types and the string type only.
+  No custom getter. The variable will be initialized at runtime. Therefore you cannot assign a const variable to a function or a class.
+
+    const val PI = 3.14159
+    const val APP_NAME = "MyKotlinApp"
+    
+    object Constants {
+        const val MAX_USERS = 100
+        const val BASE_URL = "https://example.com"
+    }
+    
+    fun main() {
+        println("PI value: $PI")
+        println("App name: $APP_NAME")
+        println("Max users: ${Constants.MAX_USERS}")
+        println("Base URL: ${Constants.BASE_URL}")
+    }
+
+
+q25 . open keyword❓
+
+The open keyword is used to allow a class, variable or function to be extended or overridden. In Kotlin, all classes and members are final. as a result, they cannot be inherited or overridden unless explicitly marked as open. The open keyword allows for inheritance, which is a core principle in object-oriented programming, enabling polymorphism and code reuse.
+
+    open class Animal {
+        open fun sound() {
+            println("Animal makes a sound")
+        }
+    
+        open val name: String = "Animal"
+    }
+    
+    class Dog : Animal() {
+        override fun sound() {
+            println("Dog barks")
+        }
+    
+        override val name: String = "Dog"
+    }
+    
+    fun main() {
+        val myDog = Dog()
+        myDog.sound()  // Prints: Dog barks
+        println("Animal name: ${myDog.name}")  // Prints: Animal name: Dog
+    }
+
+q26 . Companion Object❓
+
+Developers can call the method without creating the object of the class in Java with the use of a static keyword. In Kotlin, We do not have a static keyword. Therefore, It’s a way to define static members in Kotlin.
+
+👉 Important points to keep in mind while defining a companion object or using it:
+
+  A companion object must be defined inside a class using a companion object. It gets a default name as a Companion when we do not enter a name.
+  Developers can skip the name when calling a method or accessing a value.
+  It is the same as the static keyword in Java.
+  The companion object is instantiated for the first time after the containing class is loaded.
+  without creating an instance of the class, members of a companion object can be accessed.
+  if you define properties inside of your companion object. These properties act as static properties.
+
+    class MyClass {
+        companion object {
+            fun myStaticFunction() {
+                println("This is a static function")
+            }
+        }
+    }
+
+    
+q27 . Infix Notations❓
+
+Infix notation in Kotlin allows a function to be called without the use of the dot and parentheses. It allows us to call functions in a more readable way. As we have read above the functions marked with the infix keyword can also be called using the infix notation. It means that We can omit the dot and the parentheses. As a result, This makes your code more expressive and closer to natural language.
+
+Example:
+
+    class Person(val name: String) {
+        infix fun greet(other: Person) {
+            println("$name says hello to ${other.name}")
+        }
+    }
+
+Usage:
+
+    val alice = Person("Alice")
+    val bob = Person("Bob")
+    
+    alice greet bob  // Output: Alice says hello to Bob
+
+Common Usage:
+
+    val pair = "one" to 1  // Creates a Pair<String, Int>
+
+q28 . associateBy❓
+
+The associateBy function is used as an extension function to convert a collection into a map. It creates a map from a collection by applying a function to each element to generate the keys.
+
+    data class Person(val name: String, val age: Int)
+    
+    val people = listOf(
+        Person("Alice", 30),
+        Person("Bob", 25),
+        Person("Charlie", 35)
+    )
+    
+    val mapByName = people.associateBy { it.name }
+    
+    println(mapByName)
+    // Output: {Alice=Person(name=Alice, age=30), Bob=Person(name=Bob, age=25), Charlie=Person(name=Charlie, age=35)}
+
+q29 . partition❓
+
+The partition in Kotlin is used to split a collection into two lists based on a given predication. The first list contains those that match the prediction, and the second one includes those that do not.
+
+    val numbers = listOf(1, 2, 3, 4, 5, 6)
+    
+    val (even, odd) = numbers.partition { it % 2 == 0 }
+    
+    println(even)  // Output: [2, 4, 6]
+    println(odd)   // Output: [1, 3, 5]
