@@ -879,3 +879,20 @@ The partition in Kotlin is used to split a collection into two lists based on a 
     
     println(even)  // Output: [2, 4, 6]
     println(odd)   // Output: [1, 3, 5]
+
+q30 . Kotlin Coroutines❓
+
+Coroutines stand for cooperating functions. Co means cooperation, and Routines means functions. When functions cooperate, we can call it a coroutine. Kotlin Coroutines are a powerful feature for managing asynchronous programming and concurrency in Kotlin. They provide a simple, efficient way to handle tasks like making network requests, reading data from a database, or performing background processing without blocking the main thread in a sequential style. Coroutines are lightweight threads that help manage background tasks by providing a structured way to handle concurrency while avoiding callback hell and complex threading code.
+
+Features of Coroutines
+
+  Light Weight
+  A coroutine has a collection of threads that can be used when required. When the task is done, the thread is returned to the collection and reused when needed.     Coroutines allow you to run many coroutines concurrently without consuming too many resources. Because of the support for suspension, you can run many coroutines on a single thread, which does not block the thread where the coroutine is running, which is why it is called lightweight.
+  
+  Fewer memory leaks
+  Kotlin coroutines follow structured concurrency, which is why there are very less memory leaks in Kotlin. It means, it can only launch the new coroutine in a particular coroutine scope, which sets the lifetime of the coroutine. If we implement a large number of coroutines, the structured concurrency takes responsibility for it. Therefore, there are no leaks or losses.
+  
+  Built-in cancellation support
+  Coroutines are cooperative when it comes to cancellations. cancellation in the coroutine is interactive. Coroutines automatically check for cancellation and stop execution when cancelled. You can cancel a coroutine by calling cancel() on its Job or CoroutineScope.
+
+  
