@@ -884,6 +884,14 @@ q30 . Kotlin Coroutines❓
 
 Coroutines stand for cooperating functions. Co means cooperation, and Routines means functions. When functions cooperate, we can call it a coroutine. Kotlin Coroutines are a powerful feature for managing asynchronous programming and concurrency in Kotlin. They provide a simple, efficient way to handle tasks like making network requests, reading data from a database, or performing background processing without blocking the main thread in a sequential style. Coroutines are lightweight threads that help manage background tasks by providing a structured way to handle concurrency while avoiding callback hell and complex threading code.
 
+Coroutines can execute a few lines of one function and then they will execute a few lines of another function. Then again a few lines of the previous function and so on. In this case, it can take full advantage of the thread. It will be helpful when a thread is sitting idle and not doing anything. In addition to them, It will synchronously enable writing asynchronous code. I can say, that coroutine makes multitasking very easy. Coroutines do not replace threads, It's like a framework to manage them as well. It's lightweight. But it has a powerful environment that uses cooperative native functions. Therefore, It's an optimized framework written over the threading using cooperative native functions. It means it does not map on the native thread, thus it does not require context switching on the processor.
+
+Two types of coroutines.
+    1. Stackless
+    2. Stackful
+    
+Kotlin is used by stackless coroutines. In Kotlin, the coroutine does not have its stack. Therefore they do not map on the thread.
+
 Features of Coroutines
 
   Light Weight
@@ -903,5 +911,26 @@ Features of Coroutines
 
   Efficient Resource Management
 Coroutines are lightweight and use fewer resources compared to traditional threads. They are suspended when not in use and resumed only when needed, reducing memory and CPU overhead.
+
+Basic standard use case of coroutine in Android application.
+- fetch the user from the server & show the user in the UI
+
+      fun main() {
+          fun fetchUser(){
+              GlobalScope.launch(Dispatcher.Main){
+                  val user = fetchUserDetails()
+                  showUser(user)
+              }
+          }
+          
+          suspend func fetchUserData(): User{
+              return withContext(Dispatcher.IO){
+                  //make network call on IO thread.
+                  // return User.
+              }
+          }
+      }
+
+When we call the fetchAndShowUser function without using coroutines, it will throw the NetworkOnMainThreadException. Therefore the network call is not allowed on the main thread directly.
 
 
