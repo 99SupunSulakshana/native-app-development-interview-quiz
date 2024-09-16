@@ -933,4 +933,15 @@ Basic standard use case of coroutine in Android application.
 
 When we call the fetchAndShowUser function without using coroutines, it will throw the NetworkOnMainThreadException. Therefore the network call is not allowed on the main thread directly.
 
+Dispatchers
+
+  We can use coroutines to perform certain tasks efficiently. Therefore, we should coroutines run the task on a particular thread. Therefore, This is the time when the Dispatchers come into play. Dispatchers help coroutines in deciding the thread on which the work has to be done.
+  
+  There are 4 types of Dispatchers in Kotlin Coroutines
+  
+  Dispatchers.Default : used to perform CPU-intensive tasks. ex: sorting, filtering, searching large lists…etc.
+  Dispatchers.IO : used to perform disk or network I/O-related tasks. ex: network requests, downloading files from the server…etc.
+  Dispatchers.Main : used to run on the main thread of Android. ex: UI-related tasks, small tasks…etc.
+  Dispatchers.Unconfined : used to not be confined to any specific thread where the coroutine will be executed.
+
 
