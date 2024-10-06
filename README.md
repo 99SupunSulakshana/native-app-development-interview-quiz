@@ -1126,3 +1126,416 @@ You can create a custom CoroutineScope using a Job and a specific dispatcher to 
         println("Custom scope canceled")
     }
 
+
+q31 . Kotlin Flows❓
+
+Kotlin Flows are part of the Koltin Coroutines library. It provides a powerful and flexible way to handle asynchronous data streams in a reactive programming style. That emits values to the collector and gets completed with or without an exception. In addition, Flows can emit multiple values over time, making them a natural fit for scenarios like handling data streams or events.
+
+Features of Flows
+
+  👉 Kotlin Flows are cold. No data will be produced until the flow is actively collected. This contrasts with hot streams, Like RxJava’s observables, which begin emitting values as soon as created.
+  
+  👉 Flows can emit values without blocking the calling thread and operate them asynchronously.
+  
+  👉 Flows can handle slow consumers efficiently. In this case, They can suspend their execution until the downstream is ready to collect more data.
+  
+  👉 Flows respect structured concurrency and can be cancelled when necessary. Because They are tightly integrated with Kotlin Coroutines.
+  
+  👉 Flows provide a variety of operators for transforming data (ex: mao, fileterm reduce…etc).
+  
+  👉 Flows can handle exceptions gracefully using operators like catch and onCompletion.
+  
+  The major components of flow are as below:
+  
+  👉 Flow builder (Speaker)
+  
+  👉 Operator (Translator)
+  
+  👉 Collector (Listener)
+
+Flow Builder
+
+Flow builder mainly helps in creating a flow (doing a task) and multiple values emitting items asynchronously. It provides a simple way to define a stream of data that will be produced and collected over time. Sometimes it is just required to emit the items without doing any task, for example, just emit a few numbers(1,2,3). Here, The flow builder helps us do so. We can think of this as a speaker. The Speaker will think (do a task) and speak(emit the items). The flow builder is part of Kotlin’s Coroutines library and allows for emitting values using the emit function.
+
+    flow {
+        // Inside this block, you can emit values using emit()
+        emit(value)
+        // Perform suspending operations, such as delays or network requests
+    }
+
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        // Creating a flow using flow builder
+        val numberFlow: Flow<Int> = flow {
+            for (i in 1..5) {
+                delay(100) // Simulate a time-consuming operation
+                emit(i) // Emit each number
+            }
+        }
+    
+        // Collecting the flow
+        numberFlow.collect { value ->
+            println("Received: $value")
+        }
+    }
+
+Operator
+
+The Operator is used to transform the data from one format to another format. It acts as a translator. Assume that the speaker is speaking in French and the collector(Listner) understands English only. In this case, We need to translate French into English using the translator. That translator is an Operator. In addition, using the operator we can also provide the thread on which the task will be done.
+
+Collector
+
+The collector collects the items emitted using the flow builder which are transformed by the operators. It acts as a listener. The collector is a terminal operator. It comes under the operator.
+
+Types of flow builders
+
+  👉 flowOf() — It’s used to create a flow that emits a given fixed set of values.
+    
+    flowOf(1,2,3,4,5,6)
+      .collect {
+         Log.d(TAG, it.toString())
+    }
+  👉 asFlow() — It’s an extension function that allows conversion other collections into flows.
+    
+    (1..5).asFlow()
+      .collect{
+         Log.d(TAG, it.toString())
+    }
+  👉flow{} — It is used to emit multiple values asynchronously and perform complex operations using suspending functions.
+    
+    flow {
+      (0..10).forEach {
+        emit(it)
+    }.collect {
+      Log.d(TAG, it.toString())
+      }
+    }
+  👉channelFlow{} — This builder is more advanced and is used to create a flow that can handle concurrent emits. It is suitable for flows with multiple concurrent and allows you to launch coroutines within the block.
+    
+    channelFlow {
+      (0..10).forEach {
+        send(it)
+    }.collect {
+      Log.d(TAG, it.toString())
+      }
+    }
+
+flowOn operator
+
+  flowOn is a convenient way to control the thread on which the task will be done. Generally, in Android, we do tasks on a background thread and show the result on the UI thread.
+    
+    flow {
+        emit(someData)
+        // Upstream logic here
+    }.flowOn(Dispatchers.IO) // Shifts the flow's upstream emission to the IO dispatcher
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        // Flow that emits values on a different dispatcher
+        val numberFlow = flow {
+            for (i in 1..5) {
+                delay(100) // Simulating a time-consuming task
+                println("Emitting on: ${Thread.currentThread().name}")
+                emit(i)
+            }
+        }.flowOn(Dispatchers.IO) // Moves flow emission to IO dispatcher
+    
+        // Collecting the flow on the main thread
+        numberFlow.collect { value ->
+            println("Collected on: ${Thread.currentThread().name}, value: $value")
+        }
+    }
+
+
+Long-running tasks in parallel
+
+  Zip Operator
+  
+  zip operator
+  The zip operator is an operator that emits a single value, combining the emission of two collections using a specified function. For example, when we need to run a couple of tasks in parallel, then if we need the results of both functions in a single callback when both tasks are completed, we can use the zip operation.
+  
+  Advantages of zip operator of Kotlin flow:
+  
+  👉 Runs tasks in parallel
+  
+  👉 Return the results of tasks in a single callback when all the tasks are completed.
+  
+    val zippedFlow = flow1.zip(flow2) { value1, value2 ->
+        // Combine or transform value1 and value2
+        transformedResult
+    }
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        val numbersFlow = flowOf(1, 2, 3)
+        val stringsFlow = flowOf("A", "B", "C")
+    
+        // Zipping two flows together
+        val zippedFlow = numbersFlow.zip(stringsFlow) { number, letter ->
+            "$number -> $letter"
+        }
+    
+        // Collect and print the results
+        zippedFlow.collect { result ->
+            println(result)
+        }
+    }
+
+Retry Operators
+
+retry
+
+The retry() operator re-executes the flow when an error occurs. It will keep returning until the task gets completed successfully. We can set the optional conditions for limiting retries. We can mention the number of retries and an optional predicate to control whether a retry should happen based on the exception.
+
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        var attempt = 0
+    
+        val flow = flow {
+            attempt++
+            if (attempt < 3) {
+                println("Flow execution failed, attempt: $attempt")
+                throw RuntimeException("Error on attempt: $attempt")
+            } else {
+                emit("Success on attempt: $attempt")
+            }
+        }.retry(2) // Retry up to 2 times on failure
+    
+        flow.collect { result ->
+            println(result)
+        }
+    }
+
+retryWhen
+
+The retryWhen is used for more control over retry logic. They allow to us define custom conditions based on both the exception and the number of attempts. Therefore, we can decide whether to retry based on these parameters.
+
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        val flow = flow {
+            emit("Attempting to emit")
+            throw RuntimeException("Failed to emit")
+        }.retryWhen { cause, attempt ->
+            println("Attempt $attempt failed with: $cause")
+            attempt < 2 // Retry only twice
+        }
+    
+        flow.collect { value ->
+            println(value)
+        }
+    }
+
+
+StateFlow
+
+StateFlow is a type of flow created to hold and emit the current state of a value, that can be observed and updated over time. It emits values as soon as the collector starts collecting. StateFlow is hot. This means it always has an initial value and emits the latest value to all collectors. Therefore, It always holds a single item/value, up-to-date value. when we start a new collector, it immediately receives the latest value. StateFlow doesn’t emit consecutive repeated values. It emits the value only when it is distinct from the previous value. Similar to LiveData except for the LifeCycle awareness of the Android component. We can use repeatOnLIfeCycle scope with StateFlow to add the LifeCycle awareness to it, then it will become exactly like LiveData. StateFlow is suitable for representing state in UI components (like viewModels), where the UI needs to react to changes in state. It retains the last emitted state, which is essential for use cases like UI state in Android apps. In addition, StateFlow is thread-safe. It can be shared across multiple threads without issues.
+
+basic example
+
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        // Create a MutableStateFlow with an initial value
+        val stateFlow = MutableStateFlow(0)
+    
+        // Launch a coroutine to collect the StateFlow
+        val job = launch {
+            stateFlow.collect { value ->
+                println("Collected: $value")
+            }
+        }
+    
+        // Update the state
+        stateFlow.value = 1
+        delay(100)
+        stateFlow.value = 2
+        delay(100)
+        stateFlow.value = 3
+    
+        job.cancel() // Cancel the collector
+    }
+
+    
+StateFlow in a viewModel
+
+    import kotlinx.coroutines.flow.MutableStateFlow
+    import kotlinx.coroutines.flow.StateFlow
+    import androidx.lifecycle.ViewModel
+    
+    class MyViewModel : ViewModel() {
+        // Private mutable state flow
+        private val _uiState = MutableStateFlow("Initial State")
+    
+        // Publicly exposed as read-only StateFlow
+        val uiState: StateFlow<String> = _uiState
+    
+        // Function to update the state
+        fun updateState(newState: String) {
+            _uiState.value = newState
+        }
+    }
+    
+Collecting StateFlow a UI
+
+    @Composable
+    fun MyComposable(viewModel: MyViewModel) {
+        val uiState by viewModel.uiState.collectAsState()
+    
+        Text(text = uiState) // Automatically updates when uiState changes
+    }
+
+SharedFlow
+
+SharedFlow is used to manage a stream of values that can be observed by multiple collectors simultaneously without losing events event if no collector is present at the time of emission. It is designed for scenarios where you, share the stream of data. It is a hot flow. SharedFlow can emit multiple values and It doesn’t retain the last state unless configured with a buffer. By the way, You can configure how many past events should be replayed to new collectors.
+
+example:
+
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        // Create a MutableSharedFlow
+        val sharedFlow = MutableSharedFlow<Int>()
+    
+        // Launch two collectors
+        val job1 = launch {
+            sharedFlow.collect { value ->
+                println("Collector 1 received: $value")
+            }
+        }
+    
+        val job2 = launch {
+            sharedFlow.collect { value ->
+                println("Collector 2 received: $value")
+            }
+        }
+    
+        // Emit values to the SharedFlow
+        sharedFlow.emit(1)
+        sharedFlow.emit(2)
+        sharedFlow.emit(3)
+    
+        delay(100)
+    
+        job1.cancel()
+        job2.cancel()
+    }
+
+
+replay feature
+
+    val sharedFlow = MutableSharedFlow<Int>(replay = 2) // Replays the last 2 values
+    
+    // Emit values to SharedFlow
+    sharedFlow.emit(1)
+    sharedFlow.emit(2)
+    sharedFlow.emit(3)
+    
+    // New collector receives the last 2 emitted values (2 and 3)
+    sharedFlow.collect { value ->
+        println("Collector received: $value")
+    }
+
+
+Buffer Feature
+
+The buffer feature allows it to hold a certain number of values that are waiting to be collected. This feature ensures that if collectors are slow or if the producer is emitting values too quickly, they don’t get dropped.
+
+    val sharedFlow = MutableSharedFlow<Int>(extraBufferCapacity = 2) // 2 extra buffer slots
+    
+    // Emit values to SharedFlow
+    sharedFlow.emit(1)
+    sharedFlow.emit(2)
+    sharedFlow.emit(3) // This is buffered if no collector is active
+    
+    // Collect all values
+    sharedFlow.collect { value ->
+        println("Collector received: $value")
+    }
+
+
+SharedFlow in Android ViewModel and UI Components
+
+    import kotlinx.coroutines.flow.MutableSharedFlow
+    import kotlinx.coroutines.flow.SharedFlow
+    import androidx.lifecycle.ViewModel
+
+    class MyViewModel : ViewModel() {
+        private val _eventsFlow = MutableSharedFlow<String>()
+        val eventsFlow: SharedFlow<String> = _eventsFlow
+    
+        fun triggerEvent(eventMessage: String) {
+            _eventsFlow.tryEmit(eventMessage) // Trigger an event
+        }
+    }
+    @Composable
+    fun MyComposable(viewModel: MyViewModel) {
+        LaunchedEffect(Unit) {
+            viewModel.eventsFlow.collect { event ->
+                println("Event received: $event")
+            }
+        }
+    }
+
+
+Combining StateFlow and SharedFlow
+
+StateFlow: Used to represent the UI state (e.g., loading, content).
+SharedFlow: Used to emit UI events like showing a snack bar or navigating to another screen.
+
+    class MyViewModel : ViewModel() {
+        // UI State (e.g., loading, content)
+        private val _uiState = MutableStateFlow("Initial State")
+        val uiState: StateFlow<String> = _uiState
+    
+        // UI events (e.g., navigation, showing messages)
+        private val _uiEvents = MutableSharedFlow<String>()
+        val uiEvents: SharedFlow<String> = _uiEvents
+    
+        fun updateState(newState: String) {
+            _uiState.value = newState
+        }
+    
+        fun triggerEvent(eventMessage: String) {
+            _uiEvents.tryEmit(eventMessage)
+        }
+    }
+
+Cold Flows
+
+Cold flow does not produce or emit values until it is collected. In other words, cold flows are lazy. It means they do not perform any work or execute any code until a consumer starts collecting them. It does not store the data. This means that when the flow is collected, the values are consumed and are not retained by future collectors. The complete flow will begin from the beginning for each one of the collectors. It is like 1 to 1 mapping. This means a cold flow cannot have multiple collectors. It will create a new flow for each collector.
+
+    import kotlinx.coroutines.*
+    import kotlinx.coroutines.flow.*
+    
+    fun main() = runBlocking {
+        val coldFlow = flow {
+            println("Flow is starting")
+            emit(1)
+            emit(2)
+            emit(3)
+            println("Flow has finished")
+        }
+    
+        println("Calling collect first time:")
+        coldFlow.collect { value -> println("Collected: $value") }
+    
+        println("Calling collect second time:")
+        coldFlow.collect { value -> println("Collected: $value") }
+    }
+
+
+Hot Flows
+
+Hot Flows are always active and that do not wait for collectors to start. It emits values whether collectors are present or not. They keep emitting values even if no one is collecting them at the moment. They are similar to “broadcasts”. In addition, hot flow will keep on emitting the values, collectors get the values from where they have started collecting. Hot Flows are like 1 to N mapping. It means 1 flow for N collectors. It means a hot flow can have multiple collectors and each collector might get the latest state or live events depending on when they join.
+
+Type of hot flows: StateFlow, SharedFlow
